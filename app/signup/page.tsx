@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Card, CardHeader } from "@/components/ui/card";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { signIn } from "@/auth";
  
 const formSchema = z.object({
     firstName: z.string().min(3).max(50),
@@ -22,6 +23,7 @@ const formSchema = z.object({
 export default function SignUp() {
     const router = useRouter();
     let [loading, setLoading] = useState(false);
+    const [error, setError] = useState("")
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -36,13 +38,28 @@ export default function SignUp() {
 
     const signupUser = async (details: z.infer<typeof formSchema>) => {
         setLoading(true);
-        await fetch('http://localhost:3000/api/signup', {method: 'POST', body: JSON.stringify(details)})
-        .then((res) => {
-            console.log(res, 'Successful sign in');
-            router.push('/signin');
-        }).catch((err) => {
-            console.log(err);
-        })
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(details),
+            });
+            
+            if (res.ok) {
+                // If registration successful, log in
+                router.push("/signin")
+              } else {
+                const data = await res.json()
+                setError(data.message || "Registration failed")
+              }
+            
+        } catch (error) {
+            setError("An error occurred. Please try again.")
+            console.log(error);
+            
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -121,6 +138,7 @@ export default function SignUp() {
                                 </FormItem>
                             )}
                         />
+                        {error && <p className="text-sm grid gap-2 my-2 text-red-500">{error}</p>}
                         {!loading 
                         ? 
                             <Button type="submit">Signup</Button> 
