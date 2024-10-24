@@ -4,29 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Card, CardHeader } from "@/components/ui/card";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { signIn } from "@/auth";
+import { RegisterSchema } from "@/schemas";
+import { register } from "@/actions/register";
+import { LOGIN_REDIRECT_URL } from "@/routes";
+import Link from "next/link";
  
-const formSchema = z.object({
-    firstName: z.string().min(3).max(50),
-    lastName: z.string().min(3).max(50),
-    email: z.string().email(),
-    password: z.string().min(3).max(50),
-    confirmPassword: z.string().min(3).max(50),
-})
-
 export default function SignUp() {
     const router = useRouter();
-    let [loading, setLoading] = useState(false);
-    const [error, setError] = useState("")
+    const [loading, startTransition] = useTransition();
+    const [error, setError] = useState<string | undefined>("")
+    const [success, setSuccess] = useState<string | undefined>("")
     
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof RegisterSchema>>({
+        resolver: zodResolver(RegisterSchema),
         defaultValues: {
           firstName: "",
           lastName: "",
@@ -36,30 +33,15 @@ export default function SignUp() {
         },
       })
 
-    const signupUser = async (details: z.infer<typeof formSchema>) => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(details),
-            });
-            
-            if (res.ok) {
-                // If registration successful, log in
-                router.push("/signin")
-              } else {
-                const data = await res.json()
-                setError(data.message || "Registration failed")
-              }
-            
-        } catch (error) {
-            setError("An error occurred. Please try again.")
-            console.log(error);
-            
-        } finally {
-            setLoading(false)
-        }
+    const registerUser = async (details: z.infer<typeof RegisterSchema>) => {
+        setSuccess('');
+        setError('');
+        startTransition(() => {
+            register(details).then((data) => {
+                if(!data?.error) router.push('/auth/verify');
+                setError(data?.error);
+            })
+        })
     }
 
     return (
@@ -67,7 +49,7 @@ export default function SignUp() {
             <Card className="p-4 w-[350px] h-fit">
                 <CardHeader className="text-2xl mx-auto w-fit">Signup</CardHeader>
                 <Form {...form}>
-                    <form className="flex flex-col gap-2" onSubmit={form.handleSubmit(signupUser)}>
+                    <form className="flex flex-col gap-2" onSubmit={form.handleSubmit(registerUser)}>
                         <div className="flex gap-2">
                             <FormField
                                 control={form.control}
@@ -139,9 +121,10 @@ export default function SignUp() {
                             )}
                         />
                         {error && <p className="text-sm grid gap-2 my-2 text-red-500">{error}</p>}
+                        {success && <p className="text-sm grid gap-2 my-2 text-green-500">{success}</p>}
                         {!loading 
                         ? 
-                            <Button type="submit">Signup</Button> 
+                            <Button type="submit">Register</Button> 
                         : 
                             <Button disabled type="submit">
                                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
@@ -149,6 +132,11 @@ export default function SignUp() {
                             </Button>}
                     </form>
                 </Form>
+                <div className="mt-4 text-center text-xs">
+                    <Link href="/auth/signin" className="hover:underline">
+                        Have an account? Login here
+                    </Link>
+                </div>
             </Card>
         </div>
     );

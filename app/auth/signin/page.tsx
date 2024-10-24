@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react"
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useForm } from "react-hook-form";
@@ -11,66 +11,39 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, PersonIcon, ReloadIcon } from "@radix-ui/react-icons";
-import { Path } from "@/enums/path_enum";
-import { Label } from "@radix-ui/react-label";
-import { GoogleSignin } from "@/actions/google-signin";
 import { useRouter } from "next/navigation";
-
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(3).max(50),
-})
-
+import { LoginSchema } from "@/schemas";
+import { login } from "@/actions/login";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
 export default function SignIn() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("")
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [loading, startTransition] = useTransition();
+  const [error, setError] = useState<string | undefined>("")
+  const form = useForm<z.infer<typeof LoginSchema>>({
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: ""
     },
   })
 
-  const signInUser = async (credentials: z.infer<typeof formSchema>) => {
-    console.log(credentials);
-    setLoading(true);
-    
-    try {
-      const result = await signIn('credentials', {
-        email: credentials.email,
-        password: credentials.password,
-        redirect: false,
-      })
-
-      if (result!.error) {
-        setError("Invalid credentials")
-      } else {
-        const res = await fetch('/api/user')
-        const userData = await res.json()
-
-        if (!userData.emailVerified) {
-          setError("Please verify your email before logging in.")
-          setLoading(false)
-          return
-        }
-        router.push("/")
-      }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
-    } finally {
-      setLoading(false);
-    }
+  const signInUser = async (credentials: z.infer<typeof LoginSchema>) => {
+    setError("");
+    startTransition(() => {
+      login(credentials).then((data) => {
+        if(!data?.error) router.push(DEFAULT_LOGIN_REDIRECT);
+        setError(data?.error);
+      });
+    })
   }
 
   const googleSignin = async () => {
-    await signIn('google', {callbackUrl: '/'});
+    await signIn('google', {callbackUrl: DEFAULT_LOGIN_REDIRECT});
   }
 
   return (
-    <div className="h-screen w-full flex justify-center items-center">
+    <div className="h-full w-full flex justify-center items-center">
       <Card className="mx-auto max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
@@ -108,6 +81,9 @@ export default function SignIn() {
                       </FormItem>
                   )}
                 />
+                <div className="mt-2 mb-4 text-xs text-end">
+                  <Link href={'/auth/reset-password'} className="hover:underline">Forgot Password?</Link>
+                </div>
                 {error && <p className="text-sm grid gap-2 my-2 text-red-500">{error}</p>}
                 <div className="grid gap-4 mt-4">
                   <Button disabled={loading} type="submit">
@@ -129,10 +105,9 @@ export default function SignIn() {
               Login with Google
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline">
-              Sign up
+          <div className="mt-4 text-center text-xs">
+            <Link href="/auth/register" className="hover:underline">
+              {`Don't have an account? Register here`}
             </Link>
           </div>
         </CardContent>
