@@ -10,10 +10,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Card, CardHeader } from "@/components/ui/card";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { signIn } from "@/auth";
 import { RegisterSchema } from "@/schemas";
 import { register } from "@/actions/register";
-import { LOGIN_REDIRECT_URL } from "@/routes";
 import Link from "next/link";
  
 export default function SignUp() {
