@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useTransition } from "react";
+import React, { Suspense, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useForm } from "react-hook-form";
@@ -9,14 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, EnvelopeClosedIcon, ReloadIcon } from "@radix-ui/react-icons";
-import { useRouter, useSearchParams } from "next/navigation";
-import { sendResetLink } from "@/actions/resetPassword";
+import { ArrowLeftIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { useSearchParams } from "next/navigation";
 import { NewPasswordSchema } from "@/schemas";
 import { newPassword } from "@/actions/newPassword";
 
-export default function ResetPassword() {
-  const router = useRouter()
+function NewPassword() {
   const [loading, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("")
   const [success, setSuccess] = useState<string | undefined>("")
@@ -109,4 +107,10 @@ export default function ResetPassword() {
       </Card>
     </div>
   )
+}
+
+export default function NewPasswordPage() {
+  return <Suspense>
+    <NewPassword/>
+  </Suspense>
 }

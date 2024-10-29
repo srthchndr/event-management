@@ -1,7 +1,7 @@
 'use client';
 import { newVerification } from "@/actions/verification";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 
 function ShowMessage() {
   return (
@@ -34,11 +34,19 @@ function VerifyToken(token: string) {
   )
 }
 
-export default function EmailVerificationPage() {
+function EmailVerification() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   return (
   <div className="flex flex-col items-center justify-center min-h-screen bg-background">
     {token ? VerifyToken(token) : ShowMessage()}
   </div>)
+}
+
+export default function EmailVerificationPage() {
+  return (
+    <Suspense>
+      <EmailVerification/>
+    </Suspense>
+  )
 }
