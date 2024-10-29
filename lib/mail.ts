@@ -7,7 +7,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Eventify-No-Reply <onboarding@resend.dev>',
+      from: 'Eventify-No-Reply <mail@sarathmadala.com>',
       to: email,
       subject: 'Verification email for Eventify',
       html: `<p>Click on the link to verify your email. <a href=${verificationLink}>Click here</a></p>`
@@ -29,7 +29,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Eventify-No-Reply <onboarding@resend.dev>',
+      from: 'Eventify-No-Reply <mail@sarathmadala.com>',
       to: email,
       subject: 'Reset password for Eventify',
       html: `<p>Click on the link to reset your password for Eventify. <a href=${verificationLink}>Click here</a></p>`
