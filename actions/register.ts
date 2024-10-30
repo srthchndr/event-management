@@ -6,7 +6,7 @@ import { RegisterSchema } from '@/schemas';
 import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
 import { getUserByEmail } from '@/data/user';
-import { generatePasswordResetToken } from '@/lib/tokens';
+import { generatePasswordResetToken, generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/mail';
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
@@ -43,27 +43,10 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       }
     })
 
-    const verificationToken = await generatePasswordResetToken(email);
+    const verificationToken = await generateVerificationToken(email);
 
     await sendVerificationEmail(verificationToken.email, verificationToken.token);
-    // Send verification email
-    // try {
-    //   const { data, error } = await resend.emails.send({
-    //     from: 'Eventify <onboarding@resend.dev>',
-    //     to: user.email,
-    //     subject: 'Verify email for Eventify',
-    //     react: VerificationEmailTemplate({name :user.name, verificationLink: `${process.env.NEXTAUTH_URL}/verify?token=${verificationToken.token}`}),
-    //   });
-  
-    //   if (error) {        
-    //     return { error: "Internal error please try again later" };
-    //   }
-  
-    //   return {success: "Verification email sent successfully. Please verify to continue"};
-    // } catch (error) {
-    //   return { error: "Internal error please try again later" };
-    // }
-      return {success: "Verification email sent successfully. Please verify to continue"};
+    return {success: "Verification email sent successfully. Please verify to continue"};
   } catch (error) {
     console.error('Registration error:', error)
     return { error: "An error occurred while registering" }

@@ -20,6 +20,8 @@ function VerifyToken(token: string) {
 
   useEffect(() => {
       newVerification(token).then((data) => {
+        console.log("Token", token, "Data", data);
+        
         setSuccess(data?.success);
         setError(data?.error);
       }).catch(() => {
