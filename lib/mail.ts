@@ -1,9 +1,9 @@
-import { ReactElement } from 'react';
 import { Resend } from 'resend';
 
+const domain = process.env.NEXT_PUBLIC_APP_URL;
 export async function sendVerificationEmail(email: string, token: string) {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const verificationLink = `http://localhost:3000/auth/verify?token=${token}`
+  const verificationLink = `${domain}/auth/verify?token=${token}`
 
   try {
     const { data, error } = await resend.emails.send({
@@ -25,7 +25,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 
 export async function sendPasswordResetEmail(email: string, token: string) {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const verificationLink = `http://localhost:3000/auth/new-password?token=${token}`
+  const verificationLink = `${domain}/auth/new-password?token=${token}`
 
   try {
     const { data, error } = await resend.emails.send({
