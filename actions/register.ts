@@ -17,9 +17,9 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     if(!validateValues.success) return {error: 'Invalid data'};
 
   try {
-    const { firstName, lastName, email, password } = validateValues.data;
+    const { firstName, lastName, email, password, confirmPassword } = validateValues.data;
     
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword ) {
       return { error: "Missing fields" };
     }
 
@@ -27,6 +27,10 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
     if (existingUser) {
       return { error: "Email already exists. Please login" };
+    }
+
+    if (password !== confirmPassword) {
+      return { error: "Passwords do not match" }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
