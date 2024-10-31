@@ -8,7 +8,7 @@ export default async function Settings() {
       {JSON.stringify(session)}
       <form action={async () => {
         "use server"
-        await signOut();
+        await signOut({redirectTo: '/auth/signin'});
       }}>
         <Button type='submit'>Sign out</Button>
       </form>
