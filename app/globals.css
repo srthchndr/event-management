@@ -67,3 +67,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.bg-home {
+  background-color: #334455
+}
