@@ -34,6 +34,7 @@ function AnimatedWrapper({
       {text.split(" ").map((word, i) => (
         <motion.span
           className="inline-block"
+          key={`span-${i}`}
           variants={defaultAnimations}
           initial="hidden"
           viewport={{ once: true, amount: 0.8 }}
